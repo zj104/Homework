@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇</title>
+    <style>
+        .game-area{
+            height: 600px;
+            width: 600px;
+            background-color: lightgray;
+            margin: 30px auto;
+            position: relative;
+        }
+        .snake-head{
+            height: 20px;
+            width: 20px;
+            background-color: black;
+            position: absolute;
+        }
+        .cell{
+            height: 20px;
+            width: 20px;
+            background-color: greenyellow;
+            position: absolute;
+        }
+        .food{
+            height: 20px;
+            width: 20px;
+            background-color: deepskyblue;
+            position: absolute;
+        }
+     </style>
+</head>
+<body>
+<div class="game-area" id="game-area">
+    <div left="60" top="0" class="snake-head" id="snake-head"></div>
+   <div left="40" top="0" class="cell" style="left: 40px" id="cell1"></div>
+    <div left="20" top="0" class="cell" style="left: 20px" id="cell2"></div>
+    <div left="0" top="0" class="cell" style="left: 0px" id="cell3"></div>
+    <!-- <div class="game-stop" id="game-stop" ></div> -->
+</div>
+</body>
+<script>
+    /*找到蛇头*/
+    var snakeHead = document.getElementById('snake-head');
+    /*找到游戏区域*/
+    var gameArea = document.getElementById('game-area');
+    /*找的初始的身体*/
+    var cell1 = document.getElementById('cell1');
+    var cell2 = document.getElementById('cell2');
+    var cell3 = document.getElementById('cell3');
+    /*创建一个数组 ---- 存储蛇身体的信息*/
+    var snakeList = [snakeHead,cell1,cell2,cell3];
+    /*定义四个区域是否可以通行----初始默认向右移动*/
+    var leftArea = false;
+    var topArea = false;
+    var rightArea = true;
+    var bottomAwra = false;
+    /*初始随机生产一个食物----食物的坐标只能是20的倍数*/
+    var x = parseInt(Math.random()*30)*20;//转换为整数数值
+    var y = parseInt(Math.random()*30)*20;
+    /*产生食物*/
+    var food = document.createElement('div');//在对象中创建对象
+    food.setAttribute('class','food');//设置属性
+    food.style ='left:'+(x)+'px;'+'top:'+(y)+'px';
+    gameArea.appendChild(food);//添加子元素在父级元素后面
+    /*调用身体移动*/
+    bodyMove();
+    /*设置键盘事件----开始      37左  38上  39右  40下*/
+    document.onkeydown=function(event){
+        var e = event;
+       if(e && e.keyCode===37){
+            leftArea = true;
+            topArea = false;
+            rightArea = false;
+            bottomAwra = false;
+        }
+        else if(e && e.keyCode===38){
+            leftArea = false;
+            topArea = true;
+            rightArea = false;
+            bottomAwra = false;
+        }
+        else if(e && e.keyCode===39){
+           leftArea = false;
+           topArea = false;
+           rightArea = true;
+           bottomAwra = false;
+        }
+        else if(e && e.keyCode===40){
+            leftArea = false;
+            topArea = false;
+            rightArea = false;
+            bottomAwra = true;
+        }
+    };
+    /*设置键盘事件----结束*/
+    /*身体移动方法----开始*/
+    function bodyMove() {
+        /*计时器----开始*/
+        var sid = setInterval(function () {//setInterval照指定的周期（以毫秒计）来调用函数
+            /*身子动起来----开始*/
+            for (var i = snakeList.length-1; i >0 ; i--) {
+                var preLeft = +snakeList[i-1].getAttribute('left');//getAttribute返回属性名的属性值
+                var preTop = +snakeList[i-1].getAttribute('top');
+                snakeList[i].style = 'left:'+preLeft+'px;'+'top:'+preTop+'px;';
+                snakeList[i].setAttribute('left',preLeft);//设置属性
+                snakeList[i].setAttribute('top',preTop);
+            }
+            /*身子动起来----结束*/
+            /*获取头部left top的值*/
+            var left = +snakeHead.getAttribute('left');
+            var top = +snakeHead.getAttribute('top');
+
+            /*如果右移----left+=20*/
+            if(rightArea){
+                left = left+20;
+            }
+            /*左移动*/
+            if(leftArea){
+                left = left-20;
+            }
+            /*上移*/
+            if(topArea){
+                top = top-20;
+            }
+            /*下移*/
+            if(bottomAwra){
+                top = top+20;
+            }
+            /*赋值*/
+            snakeHead.style ='left:'+left+'px;'+'top:'+top+'px';
+            snakeHead.setAttribute('left',left);//设置属性
+            snakeHead.setAttribute('top',top);
+            /*判断是否吃到食物----开始*/
+            if(left===x){
+                if(top === y){
+                    /*获取到当前身体的最后一节的位置----*/
+                    var foodX=snakeList[snakeList.length-1].getAttribute('left');//getAttribute返回属性名的属性值
+                    var foodY=snakeList[snakeList.length-1].getAttribute('top');
+                    /*吃了食物之后生产新的食物----开始*/
+                    x = parseInt(Math.random()*30)*20;
+                    y = parseInt(Math.random()*30)*20;
+                    food.style = 'display: none;';//清除上一个食物
+                    food.setAttribute('class','food');//设置属性
+                    food.style ='left:'+(x)+'px;'+'top:'+(y)+'px';
+                    gameArea.appendChild(food);
+                    /*吃了食物之后生产新的食物----结束*/
+                    /*吃了食物之后长身体----开始*/
+                    /*新节点*/
+                    var celln = document.createElement('div');//新身体的最后一节
+                    /*插入到身体最后*/
+                    snakeList.push(celln);
+                    /*设置属性坐标*/
+                    celln.setAttribute('class','cell');//设置属性
+                    celln.setAttribute('top',top);
+                    celln.setAttribute('left',left);
+                    celln.style = 'left:'+(foodX)+'px;'+'top:'+(foodY)+'px';
+                    gameArea.appendChild(celln);
+                    /*吃了食物之后长身体----结束*/
+                }
+            }
+            /*判断是否出界----开始*/
+            if(left>580||left<0||top>580||top<0){
+                clearInterval(sid);//可取消由 setInterval() 设置的 timeout。
+                alert('game over');
+                return;
+            }
+           
+            return sid;
+        },500);//毫秒
+    }
+</script>
+</html>
+
+
+//小蛇 食物 地图
+//设置这些因素的变量
+//定义蛇走的初始方向
+//随机产生食物
+//蛇动
+//设置键盘的控制
+//蛇身体移动  计时器
+//获取头部的位置
+//判断是否吃到食物
+//然后生产新的食物
+//给身体建立一个新节点
+//判断出界
